@@ -1,0 +1,55 @@
+        -:    0:Source:huffman.c
+        -:    0:Graph:huffman.gcno
+        -:    0:Data:huffman.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:#include <stdbool.h>
+        -:    4:#include <assert.h>
+        -:    5:#include "huffman.h"
+        9:    6:Node* pq_enqueue(Node** a_head, void* a_value, int (*cmp_fn)(const void*, const void*)) {
+        9:    7:	Node* new_node = malloc(sizeof(*new_node));
+        9:    8:	*new_node = (Node) { .a_value = a_value, .next = *a_head};
+        -:    9:
+        9:   10:	if ((*a_head) == NULL || (*cmp_fn) == NULL || cmp_fn((*a_head) -> a_value, new_node -> a_value) >= 0 ) {
+        8:   11:		*a_head = new_node;
+        -:   12:	}
+        -:   13:	else {
+        1:   14:		new_node -> next = (*a_head) -> next;
+        -:   15:
+        1:   16:		Node* temp = (*a_head);
+        2:   17:		while (cmp_fn(new_node -> a_value, temp -> next -> a_value) >= 0 && temp -> next != NULL) {
+        1:   18:			temp = temp -> next;
+        -:   19:		}
+        1:   20:		new_node -> next = temp -> next;
+        1:   21:		temp -> next = new_node;
+        -:   22:	}
+        9:   23:	return new_node;  // STUB -- remove this line when filling in the body of pq_enqueue(…).
+        -:   24:}
+        -:   25:
+        9:   26:Node* pq_dequeue(Node** a_head) {
+        9:   27:	Node* removed_node = *a_head;
+        9:   28:	if (*a_head != NULL) {
+        9:   29:		*a_head = (*a_head) -> next;
+        9:   30:		removed_node -> next = NULL;
+        -:   31:	}
+        9:   32:	return removed_node;  // STUB -- remove this line when filling in the body of pq_dequeue(…).
+        -:   33:}
+        -:   34:
+        5:   35:Node* stack_push(Node** a_head, void* a_value) {
+        5:   36:	return pq_enqueue(a_head, a_value, NULL);  // STUB -- remove this line when filling in the body of stack_push(…).
+        -:   37:}
+        -:   38:
+        5:   39:Node* stack_pop(Node** a_head) {
+        5:   40:	return pq_dequeue(a_head);  // STUB -- remove this line when filling in the body of stack_pop(…).
+        -:   41:}
+        -:   42:
+        1:   43:void destroy_list(Node** a_head, void (*destroy_value_fn)(void*)) {
+        5:   44:	for(int i = 0; *a_head != NULL; i++){
+        4:   45:		Node* removed_node = pq_dequeue(a_head);
+        4:   46:		destroy_value_fn(removed_node -> a_value);
+        4:   47:		free(removed_node);
+        -:   48:	}
+        1:   49:}
+        -:   50:#define HUFFMAN_C_V1

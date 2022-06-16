@@ -1,0 +1,44 @@
+set logging file gdb.1.log
+set logging on
+set history filename gdb.1.history
+set history save
+run
+backtrace
+frame 6
+listt
+list
+info locals
+info args
+break main
+run
+step
+list
+break prime_factor.c:28
+continue
+print n
+next
+print n
+step
+print n
+quit
+run
+set logging file gdb.1.log
+set logging on
+set history filename gdb.1.history
+set history save
+run
+backtrace
+frame 6
+list
+info locals
+info args
+break main
+run
+step;
+step
+list
+break prime_factor.c:28
+continue
+print n
+next
+print n

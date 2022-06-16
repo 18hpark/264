@@ -1,0 +1,51 @@
+        -:    0:Source:priority_queue.c
+        -:    0:Programs:4
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:#include <stdbool.h>
+        -:    4:#include <assert.h>
+        -:    5:#include "priority_queue.h"
+       26:    6:Node* pq_enqueue(Node** a_head, void* a_value, int (*cmp_fn)(const void*, const void*)) {
+       26:    7:	Node* new_node = malloc(sizeof(*new_node));
+       26:    8:	*new_node = (Node) { .a_value = a_value, .next = *a_head};
+        -:    9:
+       26:   10:	if ((*a_head) == NULL || a_value == NULL || cmp_fn((*a_head) -> a_value, new_node -> a_value) >= 0 ) {
+        6:   11:		*a_head = new_node;
+        -:   12:	}
+        -:   13:	else {
+       20:   14:		new_node -> next = (*a_head) -> next;
+       20:   15:		Node* temp = (*a_head);
+       58:   16:		while ((temp -> next != NULL) && (cmp_fn(new_node -> a_value, temp -> next -> a_value) >= 0)) {
+       38:   17:			temp = temp -> next;
+        -:   18:		}
+       20:   19:		new_node -> next = temp -> next;
+       20:   20:		temp -> next = new_node;
+        -:   21:	}
+       26:   22:	return new_node; 
+        -:   23:}
+        -:   24:
+       24:   25:Node* pq_dequeue(Node** a_head) {
+       24:   26:	Node* removed_node = *a_head;
+       24:   27:	if (*a_head != NULL) {
+       24:   28:		*a_head = (*a_head) -> next;
+       24:   29:		removed_node -> next = NULL;
+        -:   30:	}
+       24:   31:	return removed_node;  
+        -:   32:}
+        -:   33:
+    #####:   34:Node* stack_push(Node** a_head, void* a_value) {
+    #####:   35:	return pq_enqueue(a_head, a_value, NULL); 
+        -:   36:}
+        -:   37:
+    #####:   38:Node* stack_pop(Node** a_head) {
+    #####:   39:	return pq_dequeue(a_head); 
+        -:   40:}
+        -:   41:
+    #####:   42:void destroy_list(Node** a_head, void (*destroy_value_fn)(void*)) {
+    #####:   43:	for(int i = 0; *a_head != NULL; i++){
+    #####:   44:		Node* removed_node = pq_dequeue(a_head);
+    #####:   45:		destroy_value_fn(removed_node -> a_value);
+    #####:   46:		free(removed_node);
+        -:   47:	}
+    #####:   48:}
+        -:   49:#define HUFFMAN_C_V1

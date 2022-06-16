@@ -1,0 +1,216 @@
+        -:    0:Source:smintf.c
+        -:    0:Graph:smintf.gcno
+        -:    0:Data:smintf.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdarg.h>
+        -:    2:#include <stdbool.h>
+        -:    3:#include <stdlib.h>
+        -:    4:#include "smintf.h"
+        -:    5:#include <stdio.h>
+        -:    6:
+        -:    7:
+        1:    8:static void _save_result(int remainder, char** buffer) {
+        1:    9:	if (remainder > 9) {
+    #####:   10:		remainder -= 10;
+    #####:   11:		*(*buffer) = 'a' + remainder;
+    #####:   12:		(*buffer)++;
+        -:   13:	}
+        -:   14:	else {
+        1:   15:		*(*buffer) = '0' + remainder;
+        1:   16:		(*buffer)++;
+        -:   17:	}
+        1:   18:}
+        -:   19:
+        -:   20:
+        1:   21:static void _find_length(int n, int radix, char* prefix, int* length) {
+        -:   22:	unsigned int n_abs;
+        1:   23:	if (n < 0) {
+    #####:   24:		(*length)++;
+    #####:   25:		n_abs = -n;
+        -:   26:	}
+        -:   27:	else {
+        1:   28:		n_abs = n;
+        -:   29:	}
+        -:   30:
+       1*:   31:	for (int i = 0; prefix[i] != '\0'; i++) {
+    #####:   32:		(*length)++;
+        -:   33:	}
+        -:   34:
+        1:   35:	if (n_abs >= radix) {
+    #####:   36:		_find_length(n_abs / radix, radix, "", length);		
+    #####:   37:		(*length)++;
+        -:   38:	}
+        -:   39:	else {
+        1:   40:		(*length)++;
+        -:   41:	}
+        1:   42:}
+        -:   43:
+        1:   44:static void _to_string(int n, int radix, char* prefix, char** buffer) {
+        -:   45:	unsigned int n_abs;
+        -:   46:
+        1:   47:	if (n < 0) {
+    #####:   48:		*(*buffer) = '-';
+    #####:   49:		(*buffer)++;
+    #####:   50:		n_abs = -n;
+        -:   51:	}
+        -:   52:	else {
+        1:   53:		n_abs = n;
+        -:   54:	}
+        -:   55:
+       1*:   56:	for (int i = 0; prefix[i] != '\0'; i++) {
+    #####:   57:		*(*buffer) = prefix[i];
+    #####:   58:		(*buffer)++;
+        -:   59:	}
+        -:   60:	
+        -:   61:	int remain;
+        1:   62:	if (n_abs >= radix) {
+    #####:   63:		_to_string(n_abs / radix, radix, "", buffer);		
+    #####:   64:		remain = n_abs % radix;
+    #####:   65:		_save_result(remain, buffer);
+        -:   66:	}
+        -:   67:	else {
+        1:   68:		_save_result(n_abs, buffer);	
+        -:   69:	}
+        1:   70:}
+        -:   71:
+        1:   72:char* smintf(const char *format, ...) {
+        -:   73:	va_list more_args;
+        1:   74:	va_start(more_args, format);
+        -:   75:	
+        1:   76:	int length = 0;
+        -:   77:
+        2:   78:	for(int i = 0; format[i] != '\0'; i++) {
+        1:   79:		if(format[i] == '%') {
+        1:   80:			i++;
+        1:   81:			if(format[i] == 'd') {
+        1:   82:				int number = va_arg(more_args, int);
+        1:   83:				_find_length(number, 10, "", &length);
+        -:   84:			}
+    #####:   85:			else if(format[i] == 'b') {
+    #####:   86:				int number = va_arg(more_args, int);
+    #####:   87:				_find_length(number, 2, "0b", &length);
+        -:   88:			}
+    #####:   89:			else if(format[i] == 'x') {
+    #####:   90:				int number = va_arg(more_args, int);
+    #####:   91:				_find_length(number, 16, "0x", &length);
+        -:   92:			}
+    #####:   93:			else if(format[i] == 's') {
+    #####:   94:				char* phrase = va_arg(more_args, char*);
+    #####:   95:				for(int j = 0; phrase[j] != '\0'; j++) {
+    #####:   96:					length++;
+        -:   97:				}
+        -:   98:			}
+    #####:   99:			else if(format[i] == 'c') {
+    #####:  100:				length++;
+        -:  101:			}
+    #####:  102:			else if(format[i] == '%') {
+    #####:  103:				length++;
+        -:  104:			}
+    #####:  105:			else if(format[i] == '$') {
+    #####:  106:				int number = va_arg(more_args, int);
+    #####:  107:				unsigned int absolute_value = number;
+        -:  108:
+    #####:  109:				if(number < 0) {
+    #####:  110:					length++;
+    #####:  111:					absolute_value = number * -1;
+        -:  112:				}
+        -:  113:
+    #####:  114:				int quotient = absolute_value / 100;
+    #####:  115:				_find_length(quotient, 10,"$", &length);
+    #####:  116:				int remainder = absolute_value % 100;
+        -:  117:
+    #####:  118:				if(remainder < 10) {
+    #####:  119:					_find_length(remainder, 10, ".0", &length);
+        -:  120:				}
+        -:  121:				else {
+    #####:  122:					_find_length(remainder, 10, ".", &length);
+        -:  123:				}
+        -:  124:			}
+        -:  125:			else {
+    #####:  126:				i--;
+    #####:  127:				length++;
+        -:  128:			}
+        -:  129:		}
+        -:  130:		else {
+    #####:  131:			length++;
+        -:  132:		}
+        -:  133:	}
+        1:  134:	va_end(more_args);
+        -:  135:
+        1:  136:	va_start(more_args, format);
+        -:  137:
+        1:  138:	char* final_string = malloc((sizeof(*final_string) * (length + 1)));
+        1:  139:	printf("\n%d", length + 1);
+        -:  140:
+        1:  141:	if (final_string != NULL) {
+        1:  142:		char* temp = final_string;
+        -:  143:
+        2:  144:		for(int i = 0; format[i] != '\0'; i++) {
+        1:  145:			if(format[i] == '%') {
+        1:  146:				i++;
+        1:  147:				if(format[i] == 'd') {
+        1:  148:					int number = va_arg(more_args, int);
+        1:  149:					_to_string(number, 10, "", &temp);
+        -:  150:				}
+    #####:  151:				else if(format[i] == 'b') {
+    #####:  152:					int number = va_arg(more_args, int);
+    #####:  153:					_to_string(number, 2, "0b", &temp);
+        -:  154:				}
+    #####:  155:				else if(format[i] == 'x') {
+    #####:  156:					int number = va_arg(more_args, int);
+    #####:  157:					_to_string(number, 16, "0x", &temp);
+        -:  158:				}
+    #####:  159:				else if(format[i] == 's') {
+    #####:  160:					char* phrase = va_arg(more_args, char*);
+    #####:  161:					for(int j = 0; phrase[j] != '\0'; j++) {
+    #####:  162:						(*temp) = phrase[j];
+    #####:  163:						temp++;
+        -:  164:					}
+        -:  165:				}
+    #####:  166:				else if(format[i] == 'c') {
+    #####:  167:					char alphabet = va_arg(more_args, int);
+    #####:  168:					(*temp) = alphabet;
+    #####:  169:					temp++;
+        -:  170:				}
+    #####:  171:				else if(format[i] == '%') {
+    #####:  172:					(*temp) = '%';
+    #####:  173:					temp++;
+        -:  174:				}
+    #####:  175:				else if(format[i] == '$') {
+    #####:  176:					int number = va_arg(more_args, int);
+    #####:  177:					unsigned int absolute_value = number;
+        -:  178:
+    #####:  179:					if(number < 0) {
+    #####:  180:						(*temp) = '-';
+    #####:  181:						temp++;
+    #####:  182:						absolute_value = number * -1;
+        -:  183:					}
+        -:  184:
+    #####:  185:					int quotient = absolute_value / 100;
+    #####:  186:					_to_string(quotient, 10,"$", &temp);
+    #####:  187:					int remainder = absolute_value % 100;
+        -:  188:
+    #####:  189:					if(remainder < 10) {
+    #####:  190:						_to_string(remainder, 10, ".0", &temp);
+        -:  191:					}
+        -:  192:					else {
+    #####:  193:						_to_string(remainder, 10, ".", &temp);
+        -:  194:					}
+        -:  195:				}
+        -:  196:				else {
+    #####:  197:					i--;
+    #####:  198:					(*temp) = format[i];
+    #####:  199:					temp++;
+        -:  200:				}
+        -:  201:			}
+        -:  202:			else {
+    #####:  203:				(*temp) = format[i];
+    #####:  204:				temp++;
+        -:  205:			}
+        -:  206:		}	
+        1:  207:		*temp = '\0';
+        1:  208:		va_end(more_args);
+        -:  209:	}
+        1:  210:	return final_string;
+        -:  211:}

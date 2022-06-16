@@ -1,0 +1,60 @@
+        -:    0:Source:huffman.c
+        -:    0:Programs:3
+        -:    1:#include <stdbool.h>
+        -:    2:#include <stdio.h>
+        -:    3:#include <stdlib.h>
+        -:    4:#include <assert.h>
+        -:    5:#include "huffman.h"
+        -:    6:
+        9:    7:static int _compare(const void* node_left, const void* node_right) {
+        9:    8:	TreeNode* tree_left = (TreeNode*)node_left;
+        9:    9:	TreeNode* tree_right = (TreeNode*)node_right;
+        9:   10:	if (tree_left -> frequency == tree_right -> frequency) {
+        3:   11:		return (int*)(tree_left) - (int*)(tree_right);
+        -:   12:	}
+        -:   13:	else {
+        6:   14:		return (int)(tree_left -> frequency) - (int)(tree_right -> frequency);
+        -:   15:	}
+        -:   16:}
+        -:   17:	
+        2:   18:Node* make_huffman_pq(Frequencies freqs) {
+        2:   19:	Node* head = NULL;
+      514:   20:	for (int i = 0; i < 256; i++) {
+      512:   21:		if (freqs[i] != 0) {
+        4:   22:			TreeNode* new_node = malloc(sizeof(*new_node));
+        4:   23:			*new_node = (TreeNode) { .left = NULL, .right = NULL, .character = (char)i, .frequency = freqs[i] };
+        4:   24:			pq_enqueue(&(head), new_node, _compare);
+        -:   25:		}
+        -:   26:	}
+        2:   27:	return head;
+        -:   28:}
+        -:   29:
+        2:   30:TreeNode* make_huffman_tree(Node* head) {
+        2:   31:	if (head == NULL) {
+        1:   32:		return NULL;
+        -:   33:	}
+        4:   34:	while (head -> next != NULL) {
+        3:   35:		TreeNode* tree_node = malloc(sizeof(*tree_node));
+        3:   36:		Node* head_left = pq_dequeue(&head);
+        3:   37:		Node* head_right = pq_dequeue(&head);
+        3:   38:		tree_node -> left = head_left -> a_value;
+        3:   39:		tree_node -> right = head_right -> a_value;
+        3:   40:		tree_node -> character = '\0';
+        3:   41:		tree_node -> frequency = ((TreeNode*)(head_left -> a_value)) -> frequency + ((TreeNode*)(head_right -> a_value)) -> frequency;
+        3:   42:		pq_enqueue(&head, tree_node, _compare);
+        3:   43:		free(head_left);
+        3:   44:		free(head_right);
+        -:   45:	}
+        1:   46:	TreeNode* node = head -> a_value;
+        1:   47:	free(head);
+        1:   48:	return node;
+        -:   49:}
+        -:   50:
+       15:   51:void destroy_huffman_tree(TreeNode** a_root) {
+       15:   52:	if (*a_root != NULL) {
+        7:   53:		destroy_huffman_tree(&(*a_root) -> left);
+        7:   54:		destroy_huffman_tree(&(*a_root) -> right);
+        7:   55:		free(*a_root);
+        7:   56:		(*a_root) = NULL;
+        -:   57:	}
+       15:   58:}

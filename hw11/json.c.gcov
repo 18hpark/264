@@ -1,0 +1,116 @@
+        -:    0:Source:json.c
+        -:    0:Graph:json.gcno
+        -:    0:Data:json.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:#include <stdbool.h>
+        -:    4:#include <ctype.h>
+        -:    5:#include <string.h>
+        -:    6:#include <limits.h>
+        -:    7:#include "json.h"
+        -:    8:
+       14:    9:bool parse_int(int* a_value, char const** a_pos) {
+       14:   10:	int length = strlen(*a_pos);
+       14:   11:	bool is_minus = false;
+       14:   12:	(*a_value) = 0;
+       40:   13:	for(int i = 0; i < length; i++) {
+       30:   14:		if ((*(*a_pos) >= '0' && *(*a_pos) <= '9')) {
+       19:   15:			(*a_value) *= 10;
+       19:   16:			(*a_value) += (*(*a_pos) - '0');
+       19:   17:			(*a_pos)++;
+       19:   18:			if (*(*a_pos) == '-' && (*a_value != 0)) {
+        1:   19:				return true;
+        -:   20:			}
+        -:   21:		}
+       11:   22:		else if(*(*a_pos) == '+' && (*a_value == 0)) {
+        1:   23:			(*a_pos)++;
+       1*:   24:			if(!(*(*a_pos) >= '0' && *(*a_pos) <= '9')) {
+        1:   25:				return false; 
+        -:   26:			}
+        -:   27:		}
+       10:   28:		else if(*(*a_pos) == '-') {
+        4:   29:			(*a_pos)++;
+        4:   30:			if (*(*a_pos) >= '0' && *(*a_pos) <= '9') {
+        3:   31:				is_minus = true;
+        -:   32:			}
+        -:   33:			else {
+        1:   34:				return false; 
+        -:   35:			}
+        -:   36:		}
+        6:   37:		else if (*a_value == 0) {
+        1:   38:			return false; 
+        -:   39:		}
+        -:   40:	}
+       10:   41:	if(is_minus == true) {
+        3:   42:		(*a_value) = (*a_value) * -1;
+        -:   43:	}
+        7:   44:	else if(length == 0) {
+        1:   45:		return false;
+        -:   46:	}
+        9:   47:	return true;
+        -:   48:}
+        -:   49:
+        8:   50:bool parse_element(Element* a_element, char const** a_pos) {
+        -:   51:	bool is_final;
+       11:   52:	for (int i = 0; isspace(**a_pos) != false; i++) {
+        3:   53:		(*a_pos)++;
+        -:   54:	}
+        8:   55:	if (isdigit(**a_pos) || (**a_pos) == '-') {
+        5:   56:		(*a_element).type = ELEMENT_INT;
+        5:   57:		is_final = parse_int(&(a_element -> as_int), a_pos); 
+        -:   58:	}
+        3:   59:	else if (**a_pos == '\"') {
+        2:   60:		(*a_element).type = ELEMENT_STRING;
+        2:   61:		is_final = parse_string(&(a_element -> as_string), a_pos);
+        -:   62:	}
+        -:   63:	else {
+        1:   64:		return false;
+        -:   65:	}
+        7:   66:	return is_final;
+        -:   67:}
+        -:   68:
+        9:   69:bool parse_string(char** a_string, char const** a_pos) {
+        9:   70:	int length = 0;
+        9:   71:	length = strlen(*a_pos);
+        9:   72:	if (*(*a_pos) == '\"') {
+        8:   73:		(*a_pos)++;
+       24:   74:		for (int i = 0; (*a_pos)[i] != '\"'; i++) {
+       19:   75:			if((*a_pos)[i] == '\0' || (*a_pos)[i] == '\n') {
+        6:   76:				for(int j = 0; j < i; j++) {
+        3:   77:					(*a_pos)++;
+        -:   78:				}
+        3:   79:				return false;
+        -:   80:			}
+        -:   81:		}
+        -:   82:	}
+        -:   83:	else {
+        1:   84:		return false;
+        -:   85:	}
+        5:   86:	*a_string = malloc((sizeof(**a_string) * (length - 1)));
+       23:   87:	for (int i = 0; *(*a_pos) != '\0'; i++) {
+       18:   88:		if (*(*a_pos) != '\"') {
+       13:   89:			(*a_string)[i] = *(*a_pos);
+        -:   90:		}
+       18:   91:		(*a_pos)++;
+        -:   92:	}	
+        5:   93:	(*a_string)[length - 2] = '\0';
+        5:   94:	return true;
+        -:   95:}
+        -:   96:
+        2:   97:void print_element(Element element) {
+        2:   98:	if(element.type == ELEMENT_INT) {
+        1:   99:		printf("%d\n",element.as_int);
+        -:  100:	}
+        1:  101:	else if(element.type == ELEMENT_STRING) {
+        1:  102:		printf("\"%s\"\n", element.as_string);
+        -:  103:	}
+        2:  104:}
+        -:  105:
+        3:  106:void free_element(Element element) {
+        3:  107:	if(element.type == ELEMENT_STRING) {
+        2:  108:		free(element.as_string);
+        -:  109:	}
+        3:  110:}
+        -:  111:/* vim: set tabstop=4 shiftwidth=4 fileencoding=utf-8 noexpandtab: */

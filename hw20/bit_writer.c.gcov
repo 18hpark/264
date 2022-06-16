@@ -1,0 +1,57 @@
+        -:    0:Source:bit_writer.c
+        -:    0:Programs:4
+        -:    1:#include <assert.h>
+        -:    2:#include "bit_writer.h"
+        -:    3:#include <stdio.h>
+        -:    4:#include <stdlib.h>
+        -:    5:#include <stdint.h>
+        -:    6:
+        1:    7:BitWriter open_bit_writer(const char* path) {
+        1:    8:	return (BitWriter) { .file = fopen(path, "wb"), .current_byte = 0, .num_bits_left = 8 };
+        -:    9:}
+        -:   10:
+       29:   11:void write_bits(BitWriter* a_writer, uint8_t bits, uint8_t num_bits_to_write) {
+        -:   12:	
+      29*:   13:	assert(num_bits_to_write >= 0 && num_bits_to_write <= 8);
+      29*:   14:	assert(a_writer -> num_bits_left >= 1 && a_writer -> num_bits_left <= 8);
+        -:   15:	
+        -:   16:	//if no enough room
+       29:   17:	if (num_bits_to_write > (a_writer -> num_bits_left)) {
+        9:   18:		(a_writer -> current_byte) |= (bits >> (num_bits_to_write - (a_writer -> num_bits_left))); 
+        9:   19:		num_bits_to_write = num_bits_to_write - (a_writer -> num_bits_left); //update num bits to write
+        9:   20:		bits = bits << (8 - num_bits_to_write);	//put bits with updated num bits to write
+        9:   21:		a_writer -> num_bits_left = 0; //since there's no room anymore num_bits_left = 0
+        9:   22:		flush_bit_writer(a_writer); //clear
+        -:   23:	}
+        -:   24:	else {	
+       20:   25:		(a_writer -> current_byte) |= (bits << (a_writer -> num_bits_left - num_bits_to_write)); //put bits w num bits to write
+       20:   26:		(a_writer -> num_bits_left) = (a_writer -> num_bits_left) - num_bits_to_write; // update num bits left
+       20:   27:		num_bits_to_write = 0; //update num bits to write = 0 since it was all used
+        -:   28:		//if there no room clear it
+       20:   29:		if (a_writer -> num_bits_left == 0) {
+        3:   30:			flush_bit_writer(a_writer);
+        -:   31:		}
+        -:   32:	}
+       29:   33:	if (num_bits_to_write > 0) {
+        9:   34:		a_writer -> current_byte += bits;
+        9:   35:		a_writer -> num_bits_left -= num_bits_to_write;
+        -:   36:	}
+      29*:   37:	assert(a_writer -> num_bits_left >= 1 && a_writer -> num_bits_left <= 8);
+       29:   38:}
+        -:   39:
+       13:   40:void flush_bit_writer(BitWriter* a_writer) {
+       13:   41:	if (a_writer -> num_bits_left != 8) {
+       13:   42:		fputc(a_writer -> current_byte, a_writer -> file);
+       13:   43:		a_writer -> current_byte = 0;
+       13:   44:		a_writer -> num_bits_left = 8;
+        -:   45:	}
+       13:   46:}
+        -:   47:
+        1:   48:void close_bit_writer(BitWriter* a_writer) {
+        1:   49:	flush_bit_writer(a_writer);
+        1:   50:	fclose(a_writer -> file);
+        1:   51:	a_writer -> file = NULL;
+        1:   52:}
+        -:   53:
+        -:   54:#define __BIT_WRITER_C_V1__
+        -:   55:/* vim: set tabstop=4 shiftwidth=4 fileencoding=utf-8 noexpandtab colorcolumn=96: */

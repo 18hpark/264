@@ -1,0 +1,54 @@
+        -:    0:Source:json.c
+        -:    0:Graph:json.gcno
+        -:    0:Data:json.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:#include <stdbool.h>
+        -:    4:#include <ctype.h>
+        -:    5:#include <string.h>
+        -:    6:#include <limits.h>
+        -:    7:#include "json.h"
+        -:    8:
+        9:    9:bool parse_int(int* a_value, char** a_pos) {
+        9:   10:	int length = strlen(*a_pos);
+        9:   11:	bool is_minus = false;
+        9:   12:	(*a_value) = 0;
+       22:   13:	for(int i = 0; i < length; i++) {
+       17:   14:		if ((*(*a_pos) >= '0' && *(*a_pos) <= '9')) {
+       12:   15:			(*a_value) *= 10;
+       12:   16:			(*a_value) += (*(*a_pos) - '0');
+       12:   17:			(*a_pos)++;
+       12:   18:			if (*(*a_pos) == '-' && (*a_value != 0)) {
+        1:   19:				return true;
+        -:   20:			}
+        -:   21:		}
+        5:   22:		else if(*(*a_pos) == '+' && (*a_value == 0)) {
+        1:   23:			(*a_pos)++;
+       1*:   24:			if(!(*(*a_pos) >= '0' && *(*a_pos) <= '9')) {
+        1:   25:				return false; 
+        -:   26:			}
+        -:   27:		}
+        4:   28:		else if(*(*a_pos) == '-') {
+        3:   29:			(*a_pos)++;
+        3:   30:			if (*(*a_pos) >= '0' && *(*a_pos) <= '9') {
+        2:   31:				is_minus = true;
+        -:   32:			}
+        -:   33:			else {
+        1:   34:				return false; 
+        -:   35:			}
+        -:   36:		}
+        1:   37:		else if (*a_value == 0) {
+        1:   38:			return false; 
+        -:   39:		}
+        -:   40:	}
+        5:   41:	if(is_minus == true) {
+        2:   42:		(*a_value) = (*a_value) * -1;
+        -:   43:	}
+        3:   44:	else if(length == 0) {
+        1:   45:		return false;
+        -:   46:	}
+        4:   47:	return true;
+        -:   48:}
+        -:   49:/* vim: set tabstop=4 shiftwidth=4 fileencoding=utf-8 noexpandtab: */

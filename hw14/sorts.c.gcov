@@ -1,0 +1,60 @@
+        -:    0:Source:sorts.c
+        -:    0:Graph:sorts.gcno
+        -:    0:Data:sorts.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdbool.h>
+        -:    2:#include <assert.h>
+        -:    3:#include <stdlib.h>
+        -:    4:#include <stdio.h>
+        -:    5:#include "sorts.h"
+        -:    6:
+       36:    7:void _insert(int value, BSTNode** root) {
+       36:    8:	if (*root == NULL) {
+       14:    9:		*root = malloc(sizeof(**root));
+       14:   10:		**root = (BSTNode) { .value = value, .left = NULL, .right = NULL };
+        -:   11:	}
+       22:   12:	else if (value < ((*root) -> value)) {
+       14:   13:		_insert(value, &((*root) -> left));
+        -:   14:	}
+        -:   15:	else {
+        8:   16:		_insert(value, &((*root) -> right));
+        -:   17:	}
+       36:   18:}
+        -:   19:
+       30:   20:void _destroy(BSTNode* root) {
+       30:   21:	if (root != NULL) {
+       14:   22:		_destroy(root -> left);
+       14:   23:		_destroy(root -> right);
+       14:   24:		free(root);
+        -:   25:	}
+       30:   26:	root = NULL;
+       30:   27:}
+        -:   28:
+       15:   29:void _fill_array_from_bst(int* array, int* index, BSTNode* root) {
+       15:   30:	if (root != NULL) {
+        7:   31:		_fill_array_from_bst(array, index, root -> left);
+        7:   32:		array[*index] = root -> value;
+        7:   33:		(*index)++;
+        7:   34:		_fill_array_from_bst(array, index, root -> right);
+        -:   35:	}
+       15:   36:}
+        -:   37:
+        2:   38:BST create_bst(const int* array, int size) {
+        2:   39:	BST bst = (BST) { .root = NULL, .size = 0 };
+       16:   40:	for (int i = 0; i < size; i++) {
+       14:   41:		_insert(array[i], &(bst.root));
+        -:   42:	}
+        2:   43:	return bst;
+        -:   44:}
+        -:   45:
+        2:   46:void empty_bst(BST* bst) {
+        2:   47:	_destroy(bst -> root);
+        2:   48:}
+        -:   49:
+        1:   50:void tree_sort_array(int* array, size_t size) {
+        1:   51:	int index = 0;
+        1:   52:	BST bst = create_bst(array, size);
+        1:   53:	_fill_array_from_bst(array, &index, bst.root);
+        1:   54:	empty_bst(&bst);
+        1:   55:}

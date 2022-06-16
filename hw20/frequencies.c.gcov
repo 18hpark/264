@@ -1,0 +1,23 @@
+        -:    0:Source:frequencies.c
+        -:    0:Programs:4
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:#include <string.h>
+        -:    4:#include <stdbool.h>
+        -:    5:#include <errno.h>
+        -:    6:#include "frequencies.h"
+        -:    7:
+        3:    8:bool calc_frequencies(Frequencies freqs, const char* path, const char** a_error) {
+        3:    9:	FILE* fp = fopen(path, "r");
+        3:   10:	if (fp == NULL) {
+        1:   11:		*a_error = strerror(errno);
+        1:   12:		return false;
+        -:   13:	}
+        -:   14:	else {
+       35:   15:		for(int ch = fgetc(fp); !feof(fp); ch = fgetc(fp)) {
+       33:   16:			freqs[ch] += 1;
+        -:   17:		}
+        -:   18:	}
+        2:   19:	fclose(fp);	
+        2:   20:	return true;
+        -:   21:}
